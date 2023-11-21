@@ -6,7 +6,8 @@ source("src/import_SOEP.R")
 
 
 #### Preprocessing ####
-source("src/preprocess_SOEP_MCS.R")
+# includes removal of missing values (please check!)
+source("src/preprocess_SOEP.R")
 
 
 
