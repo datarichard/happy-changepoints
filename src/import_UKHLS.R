@@ -8,6 +8,7 @@ library(writexl)
 library(readxl)
 
 #adjust working directory as needed to access data#
+#Left in W_1_indresp_extra as this is the only file which includes all components of MCS, all others only have sf1 and then sf12mcs#
 setwd('/Users/sam/Library/Mobile Documents/com~apple~CloudDocs/CODING/happy-changepoints/Data/UKHLS/ind_resp')
 W_1_indresp_extra <- read_dta(file = "a_indresp.dta") %>% select(pidp, a_hidp, a_age_dv, a_scghq1_dv, a_sclfsato, a_sf12mcs_dv, a_sf1, a_sf2a, a_sf2b, a_sf3b, a_sf4a, a_sf4b, a_sf5, a_sf6a, a_sf6b, a_sf6c, a_sf7)
 W_1_indresp <- W_1_indresp_extra %>% select(pidp, a_hidp, a_age_dv, a_scghq1_dv, a_sclfsato, a_sf12mcs_dv, a_sf1)
