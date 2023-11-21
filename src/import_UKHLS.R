@@ -7,8 +7,10 @@ library(naniar)
 library(writexl)
 library(readxl)
 
-#adjust working directory as needed to access data#
+#####adjust working directory as needed to access data####
 #Left in W_1_indresp_extra as this is the only file which includes all components of MCS, all others only have sf1 and then sf12mcs#
+#Additionally unsure why needed to utilise encoding = "latin1" for l_indresp.dta file, but otherwise file would not load#
+
 setwd('/Users/sam/Library/Mobile Documents/com~apple~CloudDocs/CODING/happy-changepoints/Data/UKHLS/ind_resp')
 W_1_indresp_extra <- read_dta(file = "a_indresp.dta") %>% select(pidp, a_hidp, a_age_dv, a_scghq1_dv, a_sclfsato, a_sf12mcs_dv, a_sf1, a_sf2a, a_sf2b, a_sf3b, a_sf4a, a_sf4b, a_sf5, a_sf6a, a_sf6b, a_sf6c, a_sf7)
 W_1_indresp <- W_1_indresp_extra %>% select(pidp, a_hidp, a_age_dv, a_scghq1_dv, a_sclfsato, a_sf12mcs_dv, a_sf1)
@@ -38,7 +40,8 @@ W_10_hhresp <-read_dta(file = "j_hhresp.dta") %>% select(j_hidp, j_fihhmnnet1_dv
 W_11_hhresp <-read_dta(file = "k_hhresp.dta") %>% select(k_hidp, k_fihhmnnet1_dv, k_hhsize)
 W_12_hhresp <-read_dta(file = "l_hhresp.dta") %>% select(l_hidp, l_fihhmnnet1_dv, l_hhsize)
 
-#Merge individual and household files by household identifier and assign the start year of each wave
+####Merge individual and household files by household identifier and assign the start year of each wave####
+
 W_1_merge_ext <- full_join(W_1_indresp_extra, W_1_hhresp, by = "a_hipd") %>% mutate(Year = 2009)
 W_1_merge <- full_join(W_1_indresp, W_1_hhresp, by="a_hidp") %>% mutate(Year = 2009)
 W_2_merge <- full_join(W_2_indresp, W_2_hhresp, by="b_hidp") %>% mutate(Year = 2010) 
@@ -57,7 +60,7 @@ colnames(W_1_merge_ext) <- c("pidp", "hidp", "age", "ghq", "life_sat", "mcs", "s
 colnames(W_1_merge) = colnames(W_2_merge) = colnames(W_3_merge) = colnames(W_4_merge) = colnames(W_5_merge) = colnames(W_6_merge) = colnames(W_7_merge) = colnames(W_8_merge) = colnames(W_9_merge) = colnames(W_10_merge) = colnames(W_11_merge) = colnames(W_12_merge)<- c("pidp", "hidp", "age", "ghq", "life_sat", "mcs", "sf1", "hh_net_income_month", "hh_size", "year")
 
 
-#Adjust prices to October 2023 Prices using https://www.bankofengland.co.uk/monetary-policy/inflation/inflation-calculator
+####Adjust prices to October 2023 Prices using https://www.bankofengland.co.uk/monetary-policy/inflation/inflation-calculator#####
 #Remove values which were not entered (NA values) or negative monthly incomes
 W_1_merge <- W_1_merge %>% filter(!(hh_net_income_month<0), !(is.na(hh_net_income_month))) %>% mutate(hh_net_income_ann = hh_net_income_month*12*1.52)
 W_2_merge <- W_2_merge %>% filter(!(hh_net_income_month<0), !(is.na(hh_net_income_month))) %>% mutate(hh_net_income_ann = hh_net_income_month*12*1.48)
