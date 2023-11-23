@@ -78,6 +78,7 @@ ggsave(file="../graphs/combined_uk.png", combined_uk)
 
 
 ###Produce graphs about average life satisfaction and average happiness over time ###
+###HAVING A FEW PROBLEMS WITH THIS PORTION OF CODE AND NEED TO REVIEW AND FIX ###
 working <- working_nested%>%
    mutate(avg_mcs = map_dbl(data,~{mean(.x$mcs)}),median_mcs= map_dbl(data,~{quantile(.x$mcs, c(.50))}),avg_lifesat = map_dbl(data,~{mean(.x$life_sat)}),median_lifesat= map_dbl(data,~{quantile(.x$life_sat, c(.5))}) )
 
