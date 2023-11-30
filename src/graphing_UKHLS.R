@@ -78,14 +78,12 @@ ggsave(file="../graphs/combined_uk.png", combined_uk)
 
 
 ###Produce graphs about average life satisfaction and average happiness over time ###
-###HAVING A FEW PROBLEMS WITH THIS PORTION OF CODE AND NEED TO REVIEW AND FIX ###
 working <- working_nested%>%
    mutate(avg_mcs = map_dbl(data,~{mean(.x$mcs)}),median_mcs= map_dbl(data,~{quantile(.x$mcs, c(.50))}),avg_lifesat = map_dbl(data,~{mean(.x$life_sat)}),median_lifesat= map_dbl(data,~{quantile(.x$life_sat, c(.5))}) )
 
 
 colors <- c("Average MCS" = "Blue", "Median MCS" = "Red", "Average Life Sat" = "Green", "Median Life Sat"= "Pink")
-uk_happiness <- ggplot(working, aes(x=Year, y=median_mcs)) + 
- # geom_line(size=3, alpha=0.5, aes(y=avg_mcs, color = "Mean MCS"))+
+uk_happiness <- ggplot(working, aes(x=year, y=median_mcs)) + 
   geom_line(size=2, alpha=0.5, color="green") +
   scale_x_continuous(breaks = seq(2010, 2020, by = 2)) +
   ggtitle("Median Happiness", subtitle = "(1-100)") +
@@ -95,9 +93,8 @@ uk_happiness <- ggplot(working, aes(x=Year, y=median_mcs)) +
   theme_minimal()+
   theme(panel.grid.major.x=element_blank(), panel.grid.minor.x = element_blank())
   
-uk_ls <- ggplot(working, aes(x=Year, y=avg_lifesat))+
+uk_ls <- ggplot(working, aes(x=year, y=avg_lifesat))+
   geom_line(size=2, alpha=0.5, color="darkorchid")+
-  #geom_line(size=3, alpha=0.5,aes(y=median_lifesat, color = "Median Life Sat")) +
   scale_x_continuous(breaks = seq(2010, 2020, by = 2))+ 
   ggtitle("Mean Life Satisfaction", subtitle = "(0-10)") + 
   scale_color_manual(values = colors) +
@@ -106,7 +103,7 @@ uk_ls <- ggplot(working, aes(x=Year, y=avg_lifesat))+
   theme_minimal()+
   theme(panel.grid.major.x=element_blank(), panel.grid.minor.x = element_blank())
 
-uk_median_ls <- ggplot(working, aes(x=Year, y=median_lifesat))+
+uk_median_ls <- ggplot(working, aes(x=year, y=median_lifesat))+
   geom_line(size=2, alpha=0.5, color="pink")+
   scale_x_continuous(breaks = seq(2010, 2020, by = 2))+ 
   ggtitle("Median Life Satisfaction UK", subtitle = "(0-10)") + 
