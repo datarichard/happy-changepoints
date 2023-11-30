@@ -2,6 +2,7 @@
 library(tidyverse)
 setwd("../results")
 processed_soep <- read_rds("processed_soep.rds")
+processed <- processed_soep %>% mutate_all(as_factor)
 
 ###Group Processed German data by year and then utilise segmented package to determine change points in Affective Wellbeing- Psi###
 ###Being consistent with UKHLS Data, Focus on 2008 onwards
@@ -35,7 +36,6 @@ knot <- knot%>% select(year, psi) %>% mutate(changepoint = "happiness")
 ###Investigate Knot Points for Life Satisfaction ###
 library(segmented)
 
-#Note to Rich - having slight problem with this code here and saying it won't work with Haven labels of column, however it worked fine previously#
 soep_nested %>%
   mutate(
     fit = map(.x=data, .f=~segmented(lm(
