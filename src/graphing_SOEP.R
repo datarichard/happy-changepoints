@@ -114,3 +114,169 @@ soep_median_ls <- ggplot(working, aes(x=year, y=median_lifesat))+
 combined_happiness_ls_soep <- arrangeGrob(soep_happiness, soep_ls, nrow = 1)
 ggsave(file="../graphs/combined_happiness_ls_soep.png", combined_happiness_ls_soep)
 
+###Create Individual Plots###
+###Initially create Linear Model###
+filtered_soep<- filter(processed_soep, year %in% c("2010", "2012", "2014", "2016", "2018", "2020") )
+filtered_soep %>% 
+  mutate(
+    income_bin = ntile(income_ann,20)
+  ) -> working
+
+
+working %>% group_by(year, income_bin) %>% 
+  summarise(
+    wellbeing = mean(mcs),
+    income = mean(income_ann, na.rm=T)/1000
+  ) -> working
+
+
+filtered_soep %>% mutate(
+  income = income_ann/1000, 
+  wellbeing = mcs
+) -> df.plot 
+
+
+ # Linear model
+  ggplot(df.plot, aes(x = income, y = wellbeing)) +
+    geom_smooth(aes(fill = "manual1", color = "manual2"),
+      method = "lm", 
+      size = 0.5
+      ) +
+    coord_cartesian(xlim = c(0, 80),
+                  ylim = c(46, 54)) +
+    facet_wrap(~year, nrow = 1) +
+    theme_test() +
+     labs(subtitle = "Linear Regression of Happiness on Income",
+         x = "Income (€000s)",
+         y = "Wellbeing") +
+    theme(
+      legend.position = "none") -> soep_p1
+  
+  
+linear_soep <- soep_p1 + geom_point(data = working)
+ggsave(file="../graphs/linear_soep.png", linear_soep)
+
+###Create Log Linear Model and Save###
+  
+  filtered_soep%>%
+    group_by(year) %>% mutate(log_income = log(income_ann)) %>%
+    mutate(
+      income_bin = ntile(log_income, 20)
+      ) %>%
+    group_by(year, income_bin) %>%
+    summarise(
+      wellbeing = mean(mcs, na.rm=T),
+      income = mean(log_income, na.rm=T)/1000
+    ) -> log.df.deciles
+
+ggplot(log.df.deciles, aes(x = income, y = wellbeing)) +
+    geom_smooth(aes(fill = "manual1", color = "manual2"),
+                method = "lm", formula = y ~ x,
+                size = 0.5
+    ) +
+    facet_wrap(~year, nrow = 1) +
+    labs(subtitle = "Logarithmic Regression of Happiness on Income",
+         x = "Log of Income (€000s)",
+         y = "Wellbeing") +
+    theme_test() +
+    theme(
+      legend.position = "none",
+      axis.text.x=element_blank(),
+      axis.ticks.x=element_blank()) -> soep_p2
+  
+log_soep <- soep_p2 + geom_point(data = log.df.deciles)
+
+ggsave(file="../graphs/log_soep.png", log_soep)
+
+
+###Piecewise Linear Function SOEP ###
+filtered_soep %>%
+    group_by(year) %>%
+    summarise(n = n()) %>%
+    mutate(note = paste("n =", format(n, big.mark = ","))) -> df.sum
+
+filtered_soep %>%
+    mutate(
+      income = income_ann/1000,
+      wellbeing = mcs
+    ) -> df.plot
+
+filtered_soep %>%
+    group_by(year) %>%
+    mutate(
+      dollar_bin = ntile(income_ann, 20)
+      ) %>%
+    group_by(year, dollar_bin) %>%
+    summarize(
+      wellbeing = mean(mcs, na.rm=T),
+      income = mean(income_ann, na.rm=T)/1000,
+      n = n()
+    ) -> df.deciles
+
+library(segmented)
+  df.plot %>%
+    group_by(year) %>%
+    nest() %>%
+    transmute(
+      fit = map(data, 
+                ~segmented(lm(formula = wellbeing ~ income, data = .x),
+                                 seg.Z = ~income)),
+      knot = map_dbl(fit, ~summary(.x)$psi[2])
+    ) %>%
+      pull(knot, name = year) -> knots
+detach("package:segmented", unload = TRUE)
+detach("package:MASS", unload = TRUE)
+  
+years = as.numeric(names(knots))
+
+pw_lm_soep <- ggplot(df.deciles, aes(x = income, y = wellbeing)) +
+    geom_point() +
+   # geom_text(data = df.sum, aes(x = Inf, y = -Inf, label = note),
+   #           hjust = 1.1, vjust = -.75, colour = 1, size = 3) +
+    geom_smooth(data = filter(df.plot, year == years[1]),
+                aes(x = income, y = wellbeing,
+                    fill = "manual1", color = "manual2"),
+                method = lm, 
+                formula = y ~ splines::bs(x, df = 2, degree = 1, knots = knots[1]),
+                size = 0.5) +
+    geom_smooth(data = filter(df.plot, year == years[2]),
+                aes(x = income, y = wellbeing,
+                    fill = "manual1", color = "manual2"),
+                method = lm, 
+                formula = y ~ splines::bs(x, df = 2, degree = 1, knots = knots[2]),
+                size = 0.5) +
+    geom_smooth(data = filter(df.plot, year == years[3]),
+                aes(x = income, y = wellbeing,
+                    fill = "manual1", color = "manual2"),
+                method = lm, 
+                formula = y ~ splines::bs(x, df = 2, degree = 1, knots = knots[3]),
+                size = 0.5) +
+    geom_smooth(data = filter(df.plot, year == years[4]),
+                aes(x = income, y = wellbeing,
+                    fill = "manual1", color = "manual2"),
+                method = lm, 
+                formula = y ~ splines::bs(x, df = 2, degree = 1, knots = knots[4]),
+                size = 0.5) +
+    geom_smooth(data = filter(df.plot, year == years[5]),
+                aes(x = income, y = wellbeing,
+                    fill = "manual1", color = "manual2"),
+                method = lm,
+                formula = y ~ splines::bs(x, df = 2, degree = 1, knots = knots[5]),
+                size = 0.5) +
+  geom_smooth(data = filter(df.plot, year == years[6]),
+                aes(x = income, y = wellbeing,
+                    fill = "manual1", color = "manual2"),
+                method = lm,
+                formula = y ~ splines::bs(x, df = 2, degree = 1, knots = knots[6]),
+                size = 0.5) +
+    coord_cartesian(xlim = c(0, max(df.deciles$income)),
+                    ylim = c(min(df.deciles$wellbeing), max(df.deciles$wellbeing))) +
+    facet_wrap(~year, nrow = 1) +
+    labs(subtitle = "Linear-Piecewise Regression of Happiness on Income",
+         x = "Income (€000s)",
+         y = "Wellbeing") +
+    theme_test() +
+    theme(legend.position = "none")  
+  
+ggsave(file="../graphs/pw_lm_soep.png", pw_lm_soep)
+
