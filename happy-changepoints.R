@@ -1,19 +1,17 @@
 # Run file created by RMorris 
 
-#### Import ####
-source("src/import_SOEP.R")
-
-
-
-#### Preprocessing ####
-# includes removal of missing values (please check!)
-source("src/preprocess_SOEP.R")
+#### Import & preprocess ####
+# Includes removal of missing values
+# Adjustment to 2023 prices
+source("src/import_SOEP.R")  # write results/processed_soep.rds
+source("src/import_UKHLS.R") # write results/processed_uk.rds
 
 
 
 #### Model fitting ####
-source("src/fit_SOEP_MCS.R")
+source("src/modelling_SOEP.R") # write results/models_soep.rds
+source("src/modelling_UKHLS.R")
 
 
 #### Plot changepoints ####
-source("scr/plot_SOEP_MCS_CPs.R")
+source("scr/graphing_SOEP.R")
